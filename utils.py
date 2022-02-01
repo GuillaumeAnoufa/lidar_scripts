@@ -26,9 +26,29 @@ def load_pc_csv(file):
     Returns:
         cloud (str): cloud points (x,y,z,d).
     """
-    data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
+    # data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
+    data = pd.read_csv(file)
     cloud = np.array(data)
     return cloud
+
+def load_pc(file):
+    if (not os.path.exists(file)):
+        print("file {} doesn't exist".format(file))
+        exit()
+
+    if file.endswith(".pcd"):
+        pc = load_pc_pcd(file)
+        return pc
+    elif file.endswith(".csv"):
+        pc = load_pc_csv(file)
+        return pc
+    elif file.endswith(".npy"):
+        pc = load_pc_npy(file)
+        return pc
+    else:
+        print("unknown file extension")
+
+
 
 def write_pcd(file, cloud):
     """Write Files pcd.
