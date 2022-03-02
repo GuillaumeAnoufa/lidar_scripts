@@ -3,6 +3,7 @@ import PyQt5 # for Mayavi
 import argparse
 from mayavi import mlab
 import os
+import algos.projections as proj
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

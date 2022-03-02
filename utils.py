@@ -2,6 +2,25 @@ import pandas as pd
 import os,sys,numpy as np
 from pypcd import pypcd
 import open3d as o3d
+import PyQt5 # for Mayavi
+
+def visualize_colored_pointcloud(pc):
+    try:
+        from mayavi import mlab
+    except ImportError:
+        print('mayavi not found, skip visualize')
+        return
+        # plot rgba points
+    mlab.figure('pc', bgcolor=(0.05, 0.05, 0.05))
+    # 构建lut 将RGB颜色索引到点
+    lut_idx = np.arange(len(pc))
+    lut = np.column_stack([pc[:, 4:][:, ::-1], np.ones_like(pc[:, 0]) * 255])
+    # plot
+    p3d = mlab.points3d(pc[:, 0], pc[:, 1], pc[:, 2], lut_idx, mode='point')
+    p3d.module_manager.scalar_lut_manager.lut.number_of_colors = len(lut_idx)
+    p3d.module_manager.scalar_lut_manager.lut.table = lut
+    # mlab.axes()
+    mlab.show()
 
 def visualize_pcd(data_path):
     pointcloud = o3d.io.read_point_cloud(data_path)
@@ -26,8 +45,8 @@ def load_pc_csv(file):
     Returns:
         cloud (str): cloud points (x,y,z,d).
     """
-    # data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
-    data = pd.read_csv(file)
+    data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
+    # data = pd.read_csv(file)
     cloud = np.array(data)
     return cloud
 

@@ -1,12 +1,10 @@
 import time
-
 import numpy as np, sys, os, cv2, yaml
 import PyQt5 # for Mayavi
-# import pandas as pd
 import utils
 
-sys.path.append('/home/ganoufa/workSpace/lidar/catkin_ws/src/lidar_camera_processing/scripts/algos/')
-import projections as proj
+sys.path.append('/home/ganoufa/workSpace/lidar/useful_scripts/')
+import algos.projections as proj
 
 configs = yaml.load(open("/home/ganoufa/workSpace/lidar/catkin_ws/src/lidar_camera_processing/calibration/calibration.yaml", 'r').read(), Loader=yaml.FullLoader)
 root = configs['data']['root']
@@ -79,22 +77,19 @@ def project(pc, img):
     view_img = cv2.cvtColor(view_img, cv2.COLOR_BGR2RGB)
 
     # 60ms -> peut-être ne pas projeter toute l'image ? Seulement dans la zone de l'image interessante
-    board = proj.pc_to_img(pc, view_img, extrinsic_matrix, intrinsic_matrix, distortion)
+    board = proj.pc_to_img(pc, view_img, extrinsic_matrix, intrinsic_matrix)
     return board
 
 if __name__ == '__main__':
 
-    livox_example = 'data/1.npy' # npy load is faster (by far (1000x))
-    pc = utils.load_pc_npy(livox_example)
-    print(pc.shape)
+    pcd_path = "/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record1/281.pcd"
+    img_path = "/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record1/281.png"
+    
+    pc = utils.load_pc(pcd_path)
+    img = cv2.imread(img_path)
 
-    img = cv2.imread("data/1.png")
     board = project(pc, img)
-    # cv2.imshow('Projection', board)
-    # cv2.waitKey(0)
-
     img_roi = cv2.selectROI("selectROI", board)
-    print(img_roi)
 
     start=time.perf_counter()
 
@@ -111,8 +106,6 @@ if __name__ == '__main__':
         (projection_points[:, 1] < img.shape[0])
     )]
 
-    print(projection_points[0])
-
     projection_points_selected = projection_points[np.where(
         (projection_points[:, 1] > img_roi[1]) &
         (projection_points[:, 1] < img_roi[1] + img_roi[3]) &
@@ -124,6 +117,8 @@ if __name__ == '__main__':
     # On aurait pu sauvegarder les coordonnées dans le point cloud des projections points en rajoutant 3 colonnes 
     # au lieu de faire la projection inverse
     pc_selected = proj.back_projection(projection_points_selected, intrinsic_matrix, extrinsic_matrix)
+
+    proj.img_to_pc(pc_selected, img, extrinsic_matrix, intrinsic_matrix)
 
     end=time.perf_counter()
     print('processing time : {}ms'.format( (end-start)*1000 ) )

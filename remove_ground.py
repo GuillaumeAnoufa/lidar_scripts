@@ -5,6 +5,7 @@ import numpy as np
 import ground_removal_ext
 import PyQt5 # for Mayavi
 import pandas as pd
+import utils
 
 def load_pc_velodyne(bin_file_path):
     """
@@ -18,27 +19,16 @@ def load_pc_velodyne(bin_file_path):
         pc = np.array(pc).reshape(-1, 4)
         return pc
 
-def load_pc_CSV(file):
-    """Read files cloud points csv.
-    Args:
-        self: The object pointer.
-        file (str): path to files cloud points (csv).
-    Returns:
-        cloud (str): cloud points (x,y,z,d).
-    """
-    data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
-    cloud = np.array(data)
-    return cloud
-
 if __name__ == '__main__':
 
     velodyne_example = '/home/ganoufa/workSpace/lidar/ViktorTsoi/pointcloud_ground_removal/2011_09_28/2011_09_28_drive_0034_sync/velodyne_points/data/0000000000.bin'
 
-    livox_example = '/home/ganoufa/data/pcds/plane_ground_500.csv'
+    # livox_example = '/home/ganoufa/data/pcds/plane_ground_500.csv'
+    livox_example = '/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record1/4460.pcd'
 
-    pc = load_pc_velodyne(velodyne_example)
+    # pc = load_pc_velodyne(velodyne_example)
 
-    # pc = load_pc_CSV(livox_example)
+    pc = utils.load_pc(livox_example)
 
     print(pc.shape)
     # ground removal
