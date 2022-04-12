@@ -3,24 +3,19 @@
 
 from __future__ import absolute_import, print_function
 
-import argparse
-import os
-import sys
-
 import pandas as pd
 import cv2
 import numpy as np
 
 import utils
-import algos.projections as proj
 
 if __name__ == '__main__':
 
     # img = cv2.imread(args.img)
     # pc = utils.load_pc(args.pcd)
 
-    img = cv2.imread("/media/ganoufa/GAnoufaSSD/datasets/ung_pictures/test1/2.png")
-    pc = pd.read_csv("/media/ganoufa/GAnoufaSSD/datasets/ung_pictures/test1/2.csv", usecols=["X", "Y", "Z", "Reflectivity", "image_x", "image_y"])
+    img = cv2.imread("/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/hola/test/anomaly/4.png")
+    pc = pd.read_csv("/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/hola/test/anomaly/4.csv", usecols=["X", "Y", "Z", "Reflectivity", "image_x", "image_y"])
 
     # print( (pc["image_x"]*img.shape[1]).astype(int) )
 

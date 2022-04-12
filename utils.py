@@ -11,7 +11,7 @@ def visualize_colored_pointcloud(pc):
         print('mayavi not found, skip visualize')
         return
         # plot rgba points
-    mlab.figure('pc', bgcolor=(0.05, 0.05, 0.05))
+    mlab.figure('pc', size=(1440, 810), bgcolor=(0.05, 0.05, 0.05))
     # 构建lut 将RGB颜色索引到点
     lut_idx = np.arange(len(pc))
     lut = np.column_stack([pc[:, 4:][:, ::-1], np.ones_like(pc[:, 0]) * 255])
