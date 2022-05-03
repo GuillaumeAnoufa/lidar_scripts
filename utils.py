@@ -3,6 +3,7 @@ import os,sys,numpy as np
 from pypcd import pypcd
 import open3d as o3d
 import PyQt5 # for Mayavi
+from mayavi import mlab
 
 def visualize_colored_pointcloud(pc):
     try:
@@ -29,7 +30,10 @@ def visualize_pcd(data_path):
 def load_pc_pcd(file):
     pc = pypcd.PointCloud.from_path(file)
     pc_data = pc.pc_data
-    cloud = np.column_stack((pc_data["x"], pc_data["y"], pc_data["z"], pc_data["intensity"]))
+    if hasattr(pc_data, 'intensity'):
+        cloud = np.column_stack((pc_data["x"], pc_data["y"], pc_data["z"], pc_data["intensity"]))
+    else:
+        cloud = np.column_stack((pc_data["x"], pc_data["y"], pc_data["z"]))
     return cloud
 
 def load_pc_npy(file):
@@ -46,7 +50,6 @@ def load_pc_csv(file):
         cloud (str): cloud points (x,y,z,d).
     """
     data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
-    # data = pd.read_csv(file)
     cloud = np.array(data)
     return cloud
 
@@ -143,3 +146,39 @@ def pcd_to_csv(pcd_file):
     cloud = load_pc_pcd(pcd_file)
     np.savetxt(new_csv_path, cloud, delimiter=",", header="X,Y,Z,Reflectivity", comments='')
 
+def draw_gt_box(b, fig, color=(1,1,1), line_width=1, text_scale=(0.2,0.2,0.2), color_list=None):
+    ''' Draw 3D bounding boxes
+    Args:
+        gt_boxes3d: (8,3) array of vertices for the 3d box in following order:
+            1 -------- 0
+           /|         /|
+          2 -------- 3 .
+          | |        | |
+          . 5 -------- 4
+          |/         |/
+          6 -------- 7
+        fig: mayavi figure handler
+        color: RGB value tuple in range (0,1), box line color
+        line_width: box line width
+        text_scale: three number tuple
+        color_list: a list of RGB tuple, if not None, overwrite color.
+    Returns:
+        fig: updated fig
+    ''' 
+
+    for k in range(0,4):
+        # Axe X
+        i,j=k,(k+1)%4
+        mlab.plot3d([b[i,0], b[j,0]], [b[i,1], b[j,1]], [b[i,2], b[j,2]], color=color, tube_radius=None, line_width=line_width, figure=fig)
+
+        # Axe Z
+        i,j=k+4,(k+1)%4 + 4
+        mlab.plot3d([b[i,0], b[j,0]], [b[i,1], b[j,1]], [b[i,2], b[j,2]], color=color, tube_radius=None, line_width=line_width, figure=fig)
+
+        # Axe Y
+        i,j=k,k + 4
+        mlab.plot3d([b[i,0], b[j,0]], [b[i,1], b[j,1]], [b[i,2], b[j,2]], color=color, tube_radius=None, line_width=line_width, figure=fig)
+    
+    for i, pt in enumerate(b):
+        mlab.text3d(pt[0], pt[1], pt[2], '%d' % (i), scale=text_scale, color=color, figure=fig)
+    return fig
