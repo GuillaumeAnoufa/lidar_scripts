@@ -5,17 +5,11 @@ from mayavi import mlab
 import numpy as np
 import pyransac3d as pyrsc
 import time
+import anno_read
 
-PC_RANGE = [0, -40., -30., 70.4, 40., 10.]
+PC_RANGE = [0, -40., -30., 150.4, 40., 10.]
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file_path', type=str, help="file path")
-    args = parser.parse_args()
-    file = args.file_path
-    pc = utils.load_pc(args.file_path)
-    start=time.perf_counter()
-
+def rotate_plane(pc):
     plane1 = pyrsc.Plane()
     best_eq, _ = plane1.fit(pc, 0.2)
 
@@ -32,7 +26,18 @@ if __name__ == '__main__':
     # Rotation then Translation
     rot_mat = np.stack([u1, u2, n])
     translation = np.array([0, 0, n_sign * best_eq[3]])
-    pc = np.add(pc @ rot_mat.T, translation)
+    return rot_mat, translation
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file_path', type=str, help="file path")
+    args = parser.parse_args()
+    file = args.file_path
+    pc = utils.load_pc(args.file_path)
+    print(pc.shape)
+    start=time.perf_counter()
+    rot_mat, translation = rotate_plane(pc[:, :3])
+    pc[:, :3] = np.add(pc[:, :3] @ rot_mat.T, translation)
     end=time.perf_counter()
 
     # CROP
@@ -43,13 +48,16 @@ if __name__ == '__main__':
     print('min = {} , max = {}'.format(np.min(pc, axis=0), np.max(pc, axis=0)))
 
     fig = mlab.figure('pc', size=(1440, 810), bgcolor=(0.05, 0.05, 0.05))
+    # label_file = file.replace('.pcd', '.txt').replace('lidar', 'label')
+    # for obj in anno_read.get_objects_from_label(label_file):
+    #     box = np.add(obj.corners @ rot_mat.T, translation)
+    #     fig = utils.draw_gt_box(box, fig, color=(0, 1,1))
     if pc.shape[1] == 4:
         vis= mlab.points3d(pc[:, 0], pc[:, 1], pc[:, 2], pc[:, 3], mode='point', figure=fig)
     else:
         vis= mlab.points3d(pc[:, 0], pc[:, 1], pc[:, 2], mode='point', figure=fig)
 
     mlab.view(distance=25)
-    print(best_eq)
     mlab.show()
     
     

@@ -4,7 +4,7 @@ import argparse
 from mayavi import mlab
 import numpy as np
 
-PC_RANGE = [0, -39.68, -1, 69.12, 39.68, 6]
+PC_RANGE = [0, -39.68, -1, 69.12, 39.68, 7]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

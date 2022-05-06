@@ -2,8 +2,8 @@ import time
 
 import numpy as np, sys, os, cv2, yaml
 import PyQt5 # for Mayavi
-# import pandas as pd
 import utils
+import argparse
 
 import ground_removal_ext
 
@@ -42,19 +42,20 @@ if __name__ == '__main__':
     # For perf, convert pcd to npy. npy load is faster (by far (1000x))
     # pcd_path = "/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record3/197.pcd"
     # img_path = "/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record3/197.png"
-    pcd_path = "/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record2/2644.pcd"
-    img_path = "/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record2/2644.png"
+    parser = argparse.ArgumentParser()
+    # parser.add_argument('--p', dest='file_path', required=True, type=str, help="pcd file path")
+    parser.add_argument('file_path', type=str, help="file path")
+    args = parser.parse_args()
+    file = args.file_path
 
-    pc = utils.load_pc(pcd_path)
-    img = cv2.imread(img_path)
-    print(img.shape)
+    pc = utils.load_pc(args.file_path)
+    img = cv2.imread(args.file_path.replace('.pcd', '.png'))
 
     # En python cv2 ellipse prend a/2 et b/2 pour une raison inconnue ...
     # img = cv2.ellipse(img, (677, 926), (465, 254), 174.821, 0, 360, (255,0,0), 2)
-    img = cv2.ellipse(img, (619, 591), (390, 147), 176.938, 0, 360, (255,0,0), 6)
+    # img = cv2.ellipse(img, (619, 591), (390, 147), 176.938, 0, 360, (255,0,0), 6)
 
-    cv2.imshow('img', img)
-    cv2.imwrite("2644.png", img)
+    # cv2.imshow('img', img)
 
     alpha = 1. # [1, 3]
     beta = 40 # [0, 100]
@@ -62,4 +63,6 @@ if __name__ == '__main__':
     # cv2.imshow("img", img)
     # cv2.imshow("new_img", new_img)
     project_img_to_pc(pc, img)
+    # project_pc_to_img(pc, img)
+
     

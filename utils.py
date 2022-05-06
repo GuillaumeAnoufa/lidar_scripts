@@ -30,9 +30,9 @@ def visualize_pcd(data_path):
 def load_pc_pcd(file):
     pc = pypcd.PointCloud.from_path(file)
     pc_data = pc.pc_data
-    if hasattr(pc_data, 'intensity'):
+    try:
         cloud = np.column_stack((pc_data["x"], pc_data["y"], pc_data["z"], pc_data["intensity"]))
-    else:
+    except:
         cloud = np.column_stack((pc_data["x"], pc_data["y"], pc_data["z"]))
     return cloud
 
