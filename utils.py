@@ -182,3 +182,47 @@ def draw_gt_box(b, fig, color=(1,1,1), line_width=1, text_scale=(0.2,0.2,0.2), c
     for i, pt in enumerate(b):
         mlab.text3d(pt[0], pt[1], pt[2], '%d' % (i), scale=text_scale, color=color, figure=fig)
     return fig
+
+def boxToCorners(box):#center, dims, angle):
+    """
+    Args:
+        pred_box: List (cx, cy, cz, l, w, h, rz)
+    Returns:
+        corners_3d: (8, 3) corners of box3d
+    """
+    center = box[0:3]
+    l, w, h = box[3:6]
+    angle = box[6]
+    x_corners = [l / 2, l / 2, -l / 2, -l / 2, l / 2, l / 2, -l / 2, -l / 2]
+    y_corners = [w / 2, -w / 2, -w / 2, w / 2, w / 2, -w / 2, -w / 2, w / 2]
+    z_corners = [h/2, h/2, h/2, h/2, -h/2, -h/2, -h/2, -h/2]
+
+    # R = np.array([[np.cos(angle), 0, np.sin(angle)],
+    #                 [0, 1, 0],
+    #                 [-np.sin(angle), 0, np.cos(angle)]])
+    R = np.stack([[np.cos(angle), np.sin(angle), 0],
+                        [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+    corners3d = np.vstack([x_corners, y_corners, z_corners])  # (3, 8)
+    corners3d = np.dot(R, corners3d).T
+    corners3d = corners3d + center
+    return corners3d
+
+import pyransac3d as pyrsc
+def rotate_plane(pc):
+    plane1 = pyrsc.Plane()
+    best_eq, _ = plane1.fit(pc, 0.2)
+
+    n_sign = np.sign(best_eq[2])
+    n = np.array(best_eq[:3]) * n_sign # normale au plan orientée vers le haut (z)
+
+    # On défini n = [-sin(alp)*cos(eps), sin(eps), cos(alp)*cos(eps)]
+    # On défini la base u1, u2, n
+    eps = np.arcsin(n[1])
+    alp = np.arccos(n[2] / np.cos(eps))
+    u1 = [np.cos(alp), 0, np.sin(alp)]
+    u2 = [np.sin(eps) * np.sin(alp), np.cos(eps), np.sin(eps)*np.cos(alp)]
+
+    # Rotation then Translation
+    rot_mat = np.stack([u1, u2, n])
+    translation = np.array([0, 0, n_sign * best_eq[3]])
+    return rot_mat, translation

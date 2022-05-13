@@ -25,31 +25,6 @@ class Object3d(object):
         center = (box[0] + box[6]) /2
         self.gt_box = np.concatenate([center, dim, angle], axis=None)
         
-
-def boxToCorners(box):#center, dims, angle):
-    """
-    Args:
-        pred_box: List (cx, cy, cz, l, w, h, rz)
-    Returns:
-        corners_3d: (8, 3) corners of box3d
-    """
-    center = box[0:3]
-    l, w, h = box[3:6]
-    angle = box[6]
-    x_corners = [l / 2, l / 2, -l / 2, -l / 2, l / 2, l / 2, -l / 2, -l / 2]
-    y_corners = [w / 2, -w / 2, -w / 2, w / 2, w / 2, -w / 2, -w / 2, w / 2]
-    z_corners = [h/2, h/2, h/2, h/2, -h/2, -h/2, -h/2, -h/2]
-
-    # R = np.array([[np.cos(angle), 0, np.sin(angle)],
-    #                 [0, 1, 0],
-    #                 [-np.sin(angle), 0, np.cos(angle)]])
-    R = np.stack([[np.cos(angle), np.sin(angle), 0],
-                        [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
-    corners3d = np.vstack([x_corners, y_corners, z_corners])  # (3, 8)
-    corners3d = np.dot(R, corners3d).T
-    corners3d = corners3d + center
-    return corners3d
-
 if __name__ == '__main__':
     pc_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine3/lidar/15.npy"
     pred_path = "/home/ganoufa/workSpace/deep_learning/lidar_detection/OpenPCDet/output/unigine_models/pv_rcnn/default/eval/epoch_30/val/default/result.pkl"
@@ -74,7 +49,7 @@ if __name__ == '__main__':
 
     # draw pred
     for pred_box in pred[idx]['boxes_lidar']:
-        pred_corners = boxToCorners(pred_box)
+        pred_corners = utils.boxToCorners(pred_box)
         fig = utils.draw_gt_box(pred_corners, fig, color=(1, 1,1))
 
     vis= mlab.points3d(pc[:, 0], pc[:, 1], pc[:, 2], pc[:, 3], mode='point', figure=fig)
