@@ -10,10 +10,10 @@ from mayavi import mlab
 import utils
 import pickle
 import argparse
-PC_RANGE = [0, -39.68, -1, 69.12, 39.68, 7]
+PC_RANGE = [-69.12, -69.12, -1, 69.12, 69.12, 7]
 
 if __name__ == '__main__':
-    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine5/"
+    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine7/"
     parser = argparse.ArgumentParser()
     parser.add_argument('index', type=int, help="index")
     args = parser.parse_args()
