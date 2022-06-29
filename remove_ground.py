@@ -1,36 +1,22 @@
-import array
 import time
-
+import argparse
 import numpy as np
 import ground_removal_ext
 import PyQt5 # for Mayavi
-import pandas as pd
 import utils
-
-def load_pc_velodyne(bin_file_path):
-    """
-    load pointcloud file (KITTI format)
-    :param bin_file_path:
-    :return:
-    """
-    with open(bin_file_path, 'rb') as bin_file:
-        pc = array.array('f')
-        pc.fromstring(bin_file.read()) # replace fromstring to frombytes for python3
-        pc = np.array(pc).reshape(-1, 4)
-        return pc
 
 if __name__ == '__main__':
 
-    velodyne_example = '/home/ganoufa/workSpace/lidar/ViktorTsoi/pointcloud_ground_removal/2011_09_28/2011_09_28_drive_0034_sync/velodyne_points/data/0000000000.bin'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file_path', type=str, help="file path")
+    args = parser.parse_args()
+    file = args.file_path
+    pc = utils.load_pc(args.file_path)
+    # Suppression des points à l'origine sinon ça marche pas
+    pc = pc[(pc[:, 0] != 0) | (pc[:, 1] != 0) | (pc[:, 2] != 0)]
+    rot_mat, translation = utils.rotate_plane(pc[:, :3])
+    pc[:, :3] = np.add(pc[:, :3] @ rot_mat.T, translation)
 
-    # livox_example = '/home/ganoufa/data/pcds/plane_ground_500.csv'
-    livox_example = '/media/ganoufa/GAnoufaSSD/datasets/vols_24_02/record1/4460.pcd'
-
-    # pc = load_pc_velodyne(velodyne_example)
-
-    pc = utils.load_pc(livox_example)
-
-    print(pc.shape)
     # ground removal
     start=time.perf_counter()
     segmentation = ground_removal_ext.ground_removal_kernel(pc, 0.2, 200)
@@ -39,7 +25,6 @@ if __name__ == '__main__':
 
     # Nx5, x, y, z, intensity, is_ground
     print(segmentation.shape)
-    print(segmentation)
 
     try:
         from mayavi import mlab

@@ -50,11 +50,11 @@ if __name__ == '__main__':
 
     pc = utils.load_pc(args.file_path)
     img = cv2.imread(args.file_path.replace('.pcd', '.png'))
+    pc = pc[(pc[:, 0] != 0) | (pc[:, 1] != 0) | (pc[:, 2] != 0)]
 
     # En python cv2 ellipse prend a/2 et b/2 pour une raison inconnue ...
     # img = cv2.ellipse(img, (677, 926), (465, 254), 174.821, 0, 360, (255,0,0), 2)
     # img = cv2.ellipse(img, (619, 591), (390, 147), 176.938, 0, 360, (255,0,0), 6)
-
     # cv2.imshow('img', img)
 
     alpha = 1. # [1, 3]

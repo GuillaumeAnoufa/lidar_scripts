@@ -33,8 +33,8 @@ if __name__ == '__main__':
         print(idx)
         pc_path = dataset_path + "lidar/" + str(idx) + ".npy"
         pc = np.load(pc_path)
-        valid_idx = (pc[:, 0] >= PC_RANGE[0]) & (pc[:, 0] < PC_RANGE[3]) & (pc[:, 1] >= PC_RANGE[1]) & (pc[:, 1] < PC_RANGE[4]) & (pc[:, 2] >= PC_RANGE[2]) & (pc[:, 2] < PC_RANGE[5])
-        pc = pc[valid_idx, :]
+        # valid_idx = (pc[:, 0] >= PC_RANGE[0]) & (pc[:, 0] < PC_RANGE[3]) & (pc[:, 1] >= PC_RANGE[1]) & (pc[:, 1] < PC_RANGE[4]) & (pc[:, 2] >= PC_RANGE[2]) & (pc[:, 2] < PC_RANGE[5])
+        # pc = pc[valid_idx, :]
         for box in info[idx]['gt_boxes']:
             utils.draw_gt_box(utils.boxToCorners(box), fig, color=(1, 0,0))
 

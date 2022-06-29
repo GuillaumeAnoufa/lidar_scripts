@@ -14,8 +14,8 @@ if __name__ == '__main__':
     # img = cv2.imread(args.img)
     # pc = utils.load_pc(args.pcd)
 
-    img = cv2.imread("/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/hola/test/anomaly/4.png")
-    pc = pd.read_csv("/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/hola/test/anomaly/4.csv", usecols=["X", "Y", "Z", "Reflectivity", "image_x", "image_y"])
+    img = cv2.imread("/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine7/image/80.png")
+    pc = pd.read_csv("/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine7/lidar/80.csv", usecols=["X", "Y", "Z", "Reflectivity", "image_x", "image_y"])
 
     # print( (pc["image_x"]*img.shape[1]).astype(int) )
 

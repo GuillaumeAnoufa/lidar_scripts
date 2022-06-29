@@ -28,12 +28,8 @@ def visualize_pcd(data_path):
     o3d.visualization.draw_geometries([pointcloud])
 
 def load_pc_pcd(file):
-    pc = pypcd.PointCloud.from_path(file)
-    pc_data = pc.pc_data
-    try:
-        cloud = np.column_stack((pc_data["x"], pc_data["y"], pc_data["z"], pc_data["intensity"]))
-    except:
-        cloud = np.column_stack((pc_data["x"], pc_data["y"], pc_data["z"]))
+    cloud = pypcd.PointCloud.from_path(file)
+    cloud = cloud.pc_data.view(np.float32).reshape(cloud.pc_data.shape + (-1,))
     return cloud
 
 def load_pc_npy(file):
@@ -49,7 +45,8 @@ def load_pc_csv(file):
     Returns:
         cloud (str): cloud points (x,y,z,d).
     """
-    data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
+    # data = pd.read_csv(file, usecols=["X", "Y", "Z", "Reflectivity"])
+    data = pd.read_csv(file)
     cloud = np.array(data)
     return cloud
 
@@ -63,6 +60,9 @@ def load_pc(file):
         return pc
     elif file.endswith(".csv"):
         pc = load_pc_csv(file)
+        return pc    
+    elif file.endswith(".bin"):
+        pc = load_pc_velodyne(file)
         return pc
     elif file.endswith(".npy"):
         pc = load_pc_npy(file)
@@ -70,6 +70,18 @@ def load_pc(file):
     else:
         print("unknown file extension")
 
+def load_pc_velodyne(bin_file_path):
+    import array
+    """
+    load pointcloud file (KITTI format)
+    :param bin_file_path:
+    :return:
+    """
+    with open(bin_file_path, 'rb') as bin_file:
+        pc = array.array('f')
+        pc.fromstring(bin_file.read()) # replace fromstring to frombytes for python3
+        pc = np.array(pc).reshape(-1, 4)
+        return pc
 
 
 def write_pcd(file, cloud):

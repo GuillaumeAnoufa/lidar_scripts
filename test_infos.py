@@ -13,7 +13,7 @@ import argparse
 PC_RANGE = [-69.12, -69.12, -1, 69.12, 69.12, 7]
 
 if __name__ == '__main__':
-    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine7/"
+    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigineTest/"
     parser = argparse.ArgumentParser()
     parser.add_argument('index', type=int, help="index")
     args = parser.parse_args()
@@ -32,7 +32,16 @@ if __name__ == '__main__':
 
     # draw gt
     for box in info[sample_idx]['gt_boxes']:
-        fig = utils.draw_gt_box(utils.boxToCorners(box), fig, color=(1, 0,0))
+        utils.draw_gt_box(utils.boxToCorners(box), fig, color=(1, 0,0))
+    
+    for corners in info[sample_idx]['gt_corners']:
+        utils.draw_gt_box(corners, fig, color=(1, 1,1))
+        
+    db_info_path = dataset_path +  "unigine_dbinfos_train.pkl"
+    with open(db_info_path, 'rb') as pickle_file:
+        db_info = pickle.load(pickle_file)
+    
+    print("db_info ", db_info['misc'])
 
     vis= mlab.points3d(pc[:, 0], pc[:, 1], pc[:, 2], pc[:, 3], mode='point', figure=fig)
     mlab.view(distance=25)
