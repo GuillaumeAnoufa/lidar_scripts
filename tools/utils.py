@@ -22,6 +22,30 @@ def visualize_colored_pointcloud(pc):
     p3d.module_manager.scalar_lut_manager.lut.table = lut
     # mlab.axes()
     mlab.show()
+    
+def viz_labels_plt(gnd_label):
+    import matplotlib.pyplot as plt
+    plt.interactive(True) # Non blocking
+    hf = plt.figure()
+    cs = plt.imshow(gnd_label.T, interpolation='nearest')
+    cbar = hf.colorbar(cs)
+    ha = hf.add_subplot(111, projection='3d')
+    ha.set_xlabel('$X$', fontsize=20)
+    ha.set_ylabel('$Y$')
+    X = np.arange(0, 100, 1)
+    Y = np.arange(0, 100, 1)
+    X, Y = np.meshgrid(X, Y)  # `plot_surface` expects `x` and `y` data to be 2D
+    # R = np.sqrt(X**2 + Y**2)
+    ha.plot_surface(Y, X, gnd_label)
+    ha.set_zlim(-10, 10)
+    plt.draw()
+    plt.show()
+    # plt.pause(0.01)
+    # hf.clf()
+
+def viz_labels(gnd_label):
+    fig = mlab.figure('height_map', size=(1000, 1000), bgcolor=(0.05, 0.05, 0.05))
+    mlab.surf(gnd_label, figure=fig)
 
 def visualize_pcd(data_path):
     pointcloud = o3d.io.read_point_cloud(data_path)
@@ -237,4 +261,12 @@ def rotate_plane(pc):
     # Rotation then Translation
     rot_mat = np.stack([u1, u2, n])
     translation = np.array([0, 0, n_sign * best_eq[3]])
+    
+    print("rot_mat", rot_mat)
+    print("eps", eps)
+    print("alp", alp)
+    
+    print("best_eq", best_eq)
+    print("rot_mat", rot_mat)
+    print("transla", translation)
     return rot_mat, translation

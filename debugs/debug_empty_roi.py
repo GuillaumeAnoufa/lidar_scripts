@@ -13,7 +13,7 @@ import argparse
 PC_RANGE = [-69.12, -69.12, -1, 69.12, 69.12, 7]
 
 if __name__ == '__main__':
-    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine7/"
+    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigineClass0/"
     parser = argparse.ArgumentParser()
     parser.add_argument('index', type=int, help="index")
     args = parser.parse_args()
@@ -87,6 +87,16 @@ if __name__ == '__main__':
             1.0000],
          [ 16.7403,   3.3772,   1.0526,   3.0056,   2.9413,   2.0616,  -2.5196,
             1.0000]]
+    
+    boxes['492'] = [[ 4.19153756e+01, -6.88255309e+00,  5.24411756e+00,
+         4.47510899e+00,  2.64386643e+00,  1.04487998e+01,
+        -8.02383082e-03],
+       [ 4.44386084e+01,  6.68237878e+00,  1.65881913e+00,
+         4.16673638e+00,  4.21937003e+00,  3.72939331e+00,
+        -8.02382874e-03],
+       [ 5.59273312e+01, -4.36884910e+00,  1.42664147e+00,
+         4.40844079e+00,  2.38053179e+00,  2.32308948e+00,
+        -8.02383145e-03]]
     fig = mlab.figure('pc', size=(1440, 810), bgcolor=(0.05, 0.05, 0.05))
 
     # draw gt

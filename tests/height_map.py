@@ -95,8 +95,7 @@ if __name__ == '__main__':
     parser.add_argument('file_path', type=str, help="file path")
     args = parser.parse_args()
     file_path = Path(args.file_path)
-
-    data_file_list = glob.glob(str(file_path / f'*')) if file_path.is_dir() else [file_path]
+    data_file_list = glob.glob(str(file_path / f'*.csv')) if file_path.is_dir() else [file_path]
     
     for file in data_file_list:
         pc = utils.load_pc(str(file))
@@ -111,6 +110,6 @@ if __name__ == '__main__':
         viz_labels(label)
         # viz_labels_plt(label)
         # visualize_colored_pointcloud(pc)
-        visualize_z_pointcloud(pc)
+        # visualize_z_pointcloud(pc)
         mlab.show()
         
