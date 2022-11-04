@@ -181,6 +181,16 @@ def pcd_to_csv(pcd_file):
     print("converting {} to {}".format(pcd_file, new_csv_path) )
     cloud = load_pc_pcd(pcd_file)
     np.savetxt(new_csv_path, cloud, delimiter=",", header="X,Y,Z,Reflectivity", comments='')
+    
+def npy_to_bin(npy_file):
+    if (not os.path.exists(npy_file)) or (not npy_file.endswith(".npy")):
+        print("ERROR: file {} is not a npy".format(npy_file) )
+        sys.exit()
+    bin_path = os.path.splitext(npy_file)[0] + ".bin"
+    print("converting {} to {}".format(npy_file, bin_path) )
+    cloud = np.load(npy_file)[:, :4]
+    cloud.tofile(bin_path)
+
 
 def draw_gt_box(b, fig, color=(1,1,1), line_width=1, text_scale=(0.2,0.2,0.2), color_list=None):
     ''' Draw 3D bounding boxes
