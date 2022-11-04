@@ -4,8 +4,9 @@ import math
 class Object3d(object):
     def __init__(self, line):
         label = line.strip().split(' ')
-        self.cls_type = label[0]
-        self.corners = np.array(label[1:], dtype=np.float32).reshape([8, 3])
+        self.name = label[0]
+        self.cls_type = label[1]
+        self.corners = np.array(label[2:], dtype=np.float32).reshape([8, 3])
         self.cornersToBox()
     
     def cornersToBox(self):
