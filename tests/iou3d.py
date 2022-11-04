@@ -1,32 +1,33 @@
-# Test sur /media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine8/lidar/2.npy
-
-# 'pred_boxes': tensor([[ 2.2510e+01,  2.7109e+00,  9.7197e-01,  5.8674e+00,  5.5771e+00,
-#           2.0474e+00,  2.0230e+00],
-#         [ 1.3968e+01, -9.5017e+00,  3.0081e+00,  3.9836e+00,  4.1694e+00,
-#           5.7568e+00, -1.5532e+00],
-#         [ 1.0457e+01, -1.5775e-02,  3.5023e-01,  1.4946e+00,  1.6946e+00,
-#           7.8582e-01, -1.6002e+00]], device='cuda:0'), 
-# 'pred_scores': tensor([0.4935, 0.3288, 0.2455], device='cuda:0'), 
-# 'pred_labels': tensor([3, 2, 1], device='cuda:0')
-
 #!/usr/bin/env python3
 # coding=utf-8
-
 from __future__ import absolute_import, print_function
+
+from numba.core.errors import (NumbaDeprecationWarning, 
+                                NumbaPendingDeprecationWarning,
+                                NumbaPerformanceWarning)
+import warnings
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPerformanceWarning)
+
 import pandas as pd
 import numpy as np
 import PyQt5 # for Mayavi
 from mayavi import mlab
-import utils
+import tools.utils as utils
 import pickle
 import argparse
 import numba
 import sys
 import torch
-from pytorch3d.ops import box3d_overlap
+import time
+from pytorch3d.ops import box3d_overlap as box3d_overlap_pytorch3d
 
-sys.path.append('/home/ganoufa/workSpace/deep_learning/lidar_detection/OpenPCDet/pcdet/datasets/kitti/kitti_object_eval_python/')
+sys.path.append('/home/ganoufa/workSpace/deep_learning/lidar_detection/pvrcnn_agnostic/pcdet_agn/datasets/kitti/kitti_object_eval_python/')
 from rotate_iou import rotate_iou_gpu_eval
+
+sys.path.append('/home/ganoufa/workSpace/deep_learning/lidar_detection/pvrcnn_agnostic/pcdet_agn/ops/iou3d_nms')
+from iou3d_nms_utils import boxes_iou3d_gpu
 
 @numba.jit(nopython=True, parallel=True)
 def d3_box_overlap_kernel(boxes, qboxes, rinc, criterion=-1):
@@ -65,13 +66,13 @@ def d3_box_overlap(boxes, qboxes, criterion=-1):
 
 PC_RANGE = [0, -39.68, -1, 69.12, 39.68, 7]
 if __name__ == '__main__':
-    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/unigine8/"
+    dataset_path = "/media/ganoufa/GAnoufaSSD/datasets/generated_datasets/new_misc/"
     parser = argparse.ArgumentParser()
     parser.add_argument('--idx', type=int, default=2, help='image idx')
     args = parser.parse_args()
     sample_idx = args.idx
-    pred_path = "/home/ganoufa/workSpace/deep_learning/lidar_detection/OpenPCDet/output/unigine_models"
-    pred_path += "/pv_rcnn_with_centerhead_rpn3/default/eval/epoch_9/val/default/result.pkl"
+    pred_path = "/home/ganoufa/workSpace/deep_learning/lidar_detection/pvrcnn_agnostic/output/unigine_models"
+    pred_path += "/pointpillar3/default/eval/epoch_50/val/default/result.pkl"
     with open(pred_path, 'rb') as pickle_file:
         pred = pickle.load(pickle_file)
     
@@ -84,18 +85,28 @@ if __name__ == '__main__':
     pc = np.load(pc_path)
     valid_idx = (pc[:, 0] >= PC_RANGE[0]) & (pc[:, 0] < PC_RANGE[3]) & (pc[:, 1] >= PC_RANGE[1]) & (pc[:, 1] < PC_RANGE[4]) & (pc[:, 2] >= PC_RANGE[2]) & (pc[:, 2] < PC_RANGE[5])
     pc = pc[valid_idx, :]
-
-    
     gt_boxes = info[sample_idx]['gt_boxes']
     dt_boxes = pred[sample_idx]['boxes_lidar']
-    ret = d3_box_overlap(gt_boxes, dt_boxes, criterion=-1).astype(np.float64)
-    print("ret = ", ret)
     
+    # Methode 1
+    start=time.perf_counter()
+    ret = d3_box_overlap(gt_boxes, dt_boxes, criterion=-1).astype(np.float64)
+    end=time.perf_counter()
+    print("Méthode 1 | d3_box_overlap ({:.3f}ms) : \n IOU = {}".format( (end-start)*1000, ret))
+
+    # Methode 2
+    start=time.perf_counter()
     gt_corners = torch.tensor(np.stack([utils.boxToCorners(gt_box) for gt_box in gt_boxes], axis=0), dtype=torch.float32)
     dt_corners =  torch.tensor(np.stack([utils.boxToCorners(dt_box) for dt_box in dt_boxes], axis=0), dtype=torch.float32)
-    intersection_vol, iou_3d = box3d_overlap(gt_corners, dt_corners)
-    print("intersection_vol: ", intersection_vol)
-    print("iou_3d: ", iou_3d)
+    intersection_vol, iou_3d = box3d_overlap_pytorch3d(gt_corners, dt_corners)
+    end=time.perf_counter()
+    print("Méthode 2 | pytorch3d ({:.3f}ms) : \n IOU = {}".format( (end-start)*1000, iou_3d))
+    
+    # Methode 3
+    start=time.perf_counter()
+    iou_3d_boxes = boxes_iou3d_gpu(torch.from_numpy(gt_boxes).cuda(), torch.from_numpy(dt_boxes).cuda())
+    end=time.perf_counter()
+    print("Méthode 3 | boxes_iou3d_gpu({:.3f} ms) : \n IOU = {}".format( (end-start)*1000, iou_3d_boxes))
     
     gt_color = (1, 1, 1)
     dt_color = (1, 0, 0)
